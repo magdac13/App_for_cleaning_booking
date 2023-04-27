@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/4.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
-
+import os
+from django.contrib.gis import gdal
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'done',
-
 
 ]
 
@@ -131,3 +131,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MY_APP_ADDRESS = 'http://127.0.0.1:8000/'
 GOOGLE_MAPS_API_KEY = 'AIzaSyDNOmIANiGAchyRd4y9KPIU1VYRPuSF5po'
+
+os.environ['GDAL_LIBRARY_PATH'] = '/ścieżka/do/biblioteki/gdal'
+
+gdal.HAS_GDAL = True
+
