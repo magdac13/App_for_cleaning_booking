@@ -1,6 +1,6 @@
 import googlemaps
 from geopy.geocoders import GoogleV3
-from done.done import settings
+from done import settings
 from done.donepl.models import User
 
 geolocator = GoogleV3(api_key=settings.GOOGLE_MAPS_API_KEY)

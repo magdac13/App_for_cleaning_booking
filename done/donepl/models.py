@@ -1,17 +1,14 @@
 import random
-
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import User, UserManager
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models import JSONField
-from django.contrib.gis.geos import Point
-
-from done.done import settings
+from django.utils import timezone
+from geopy.distance import geodesic
 
 
 # Create your models here.
-class Job(models.Model):
+
+class Service(models.Model):
     NAME_HOUSE_CLEANING = 'House cleaning'
     NAME_HANDY_MAN = 'Handy Man'
     NAME_CAR_CLEANING = 'Car cleaning'
@@ -46,93 +43,182 @@ class Job(models.Model):
     name = models.CharField(
         max_length=100, choices=JOBS_CHOICES
     )
-    price = models.DecimalField(max_digits=8, decimal_places=2)
-    order_time = models.DateTimeField(auto_now_add=True)
-    distance = models.DecimalField(max_digits=8, decimal_places=2)
+    cost = models.DecimalField(
+        max_digits=8, decimal_places=2
+    )
+    order_time = models.DateTimeField(
+        auto_now_add=True
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_accepted = models.DateTimeField(null=True)
+    is_completed = models.BooleanField(default=False)
     duration = models.IntegerField()
 
     def __str__(self):
         return self.name
 
 
-class User(models.Model):
-    payer_account = 'payer'
-    service_assistant_account = 'assistant'
-    account_types = [
-        (payer_account, _('Get your job done')),
-        (service_assistant_account, _('You will be doing the job')),
-    ]
-    gender_male = 'M'
-    gender_female = 'F'
-    gender_other = 'O'
+class Worker(models.Model):
 
-    gender_choices = [
-        (gender_male, _('Male')),
-        (gender_female, _('Female')),
-        (gender_other, _('Other')),
-    ]
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+    )
 
-    name = models.CharField(
-        max_length=100
-    )
-    surname = models.CharField(
-        max_length=100
-    )
     date_of_birth = models.DateField()
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE
+    )
+
     gender = models.CharField(
         max_length=100
     )
     home_address = models.CharField(
-        max_length=2, choices=gender_choices
+        max_length=2, choices=GENDER_CHOICES
     )
     phone_number = models.CharField(
         max_length=100
     )
-    email = models.EmailField(
-        max_length=100
-    )
-    password = models.CharField(
-        max_length=100
-    )
-    is_active = models.BooleanField(
-        default=True
-    )
-    account_type = models.CharField(
-        choices=account_types, max_length=100
-    )
+
     rating = models.FloatField(
         default=5.0, validators=[
             MinValueValidator(3.0), MaxValueValidator(5.0)
         ]
     )
-    user_latitude = models.DecimalField(
+    worker_latitude = models.DecimalField(
         max_digits=18, decimal_places=16, null=True, blank=True
     )
-    user_longitude = models.DecimalField(
+    worker_longitude = models.DecimalField(
         max_digits=18, decimal_places=16, null=True, blank=True
     )
-    user_google_api_data = JSONField(null=True, blank=True)
-    user_geo_point = Point(user_longitude, user_latitude)
-    user_live_address = models.CharField()
+    services = models.ManyToManyField(
+        Service, blank=True
+    )
 
-    photo = models.ImageField(upload_to='profile_photos', blank=True, null=True)
+    photo = models.ImageField(
+        upload_to='profile_photos', blank=True, null=True
+    )
 
     def __str__(self):
-        return f'{self.name} {self.surname}'
+        return self.user.first_name + '' + self.user.last_name
+
+    def get_location(self):
+        return self.worker_latitude, self.worker_longitude
+
+    def set_location(self, worker_latitude, worker_longitude):
+        self.worker_latitude = worker_latitude
+        self.worker_longitude = worker_longitude
+        self.save()
+
+    def get_distance_to_customer(self, customer):
+        worker_location = self.get_location()
+        customer_location = customer.get_location()
+        return geodesic(worker_location, customer_location).km
+
+
+class Customer(models.Model):
+    GENDER_CHOICES = (
+        ('M', 'Male'),
+        ('F', 'Female'),
+    )
+
+    date_of_birth = models.DateField()
+
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE
+    )
+
+    gender = models.CharField(
+        max_length=100
+    )
+    home_address = models.CharField(
+        max_length=2, choices=GENDER_CHOICES
+    )
+    phone_number = models.CharField(
+        max_length=100
+    )
+
+    rating = models.FloatField(
+        default=5.0, validators=[
+            MinValueValidator(3.0), MaxValueValidator(5.0)
+        ]
+    )
+    worker_latitude = models.DecimalField(
+        max_digits=18, decimal_places=16, null=True, blank=True
+    )
+    worker_longitude = models.DecimalField(
+        max_digits=18, decimal_places=16, null=True, blank=True
+    )
+    services = models.ManyToManyField(
+        Service, blank=True
+    )
+
+    photo = models.ImageField(
+        upload_to='profile_photos', blank=True, null=True
+    )
+
+    def __str__(self):
+        return self.user.first_name + '' + self.user.last_name
+
+    def get_location(self):
+        return self.worker_latitude, self.worker_longitude
+
+    def set_location(self, worker_latitude, worker_longitude):
+        self.worker_latitude = worker_latitude
+        self.worker_longitude = worker_longitude
+        self.save()
+
+    def get_distance_to_worker(self, worker):
+        worker_location = self.get_location()
+        customer_location = worker.get_location()
+        return geodesic(worker_location, customer_location).km
+
+
+class Order(models.Model):
+    customer = models.ForeignKey(
+        Customer, on_delete=models.CASCADE
+    )
+    worker = models.ForeignKey(
+        Worker, on_delete=models.CASCADE
+    )
+    service = models.ForeignKey(
+        Service, on_delete=models.CASCADE
+    )
+    date_time = models.DateTimeField(
+        default=timezone.now
+    )
+    location = models.CharField(
+        max_length=255
+    )
+    hours = models.IntegerField()
+    cost = models.DecimalField(
+        max_digits=10, decimal_places=2
+    )
+    worker_rating = models.DecimalField(
+        max_digits=3, decimal_places=2
+    )
+    customer_rating = models.DecimalField(
+        max_digits=3, decimal_places=2
+    )
+
+    def __str__(self):
+        return f'{self.customer} - {self.service}'
+
+
+class Payment(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    confirmed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.customer} paid {self.amount} on {self.timestamp}"
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            self.gender = random.choice([choice[0] for choice in self.gender_choices])
-            super().save(*args, **kwargs)
-
-            self.account_type = random.choice([choice[0] for choice in self.account_types])
-            super().save(*args, **kwargs)
-            for user in User.objects.all():
-                user.rating = random.uniform(3.0, 5.0)
-                user.save()
-
-
-
+        self.amount = self.service.price
+        super(Payment, self).save(*args, **kwargs)
 
     def wallet_balance(self):
         payments = Payment.objects.filter(user=self)
@@ -142,37 +228,26 @@ class User(models.Model):
     def payment_history(self):
         payments = Payment.objects.filter(user=self)
         for payment in payments:
-            payment_history = [{'job': payment.job.name, 'amount': payment.amount, 'timestamp': payment.timestamp, 'confirmed': payment.confirmed}]
+            payment_history = [
+                {
+                 'job': payment.job.name,
+                 'amount': payment.amount,
+                 'timestamp': payment.timestamp,
+                 'confirmed': payment.confirmed
+                 }
+            ]
             return payment_history
 
 
-class Payment(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    job = models.ForeignKey(Job, on_delete=models.CASCADE)
-    amount = models.DecimalField(max_digits=10, decimal_places=2)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    confirmed = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"{self.user} paid {self.amount} on {self.timestamp}"
-
-    def save(self, *args, **kwargs):
-        self.amount = self.job.price
-        super(Payment, self).save(*args, **kwargs)
-
-
-class Chat(models.Model):
-    sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chats_sent')
-    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chats_received')
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-
 class Message(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='messages_received')
     timestamp = models.DateTimeField(auto_now_add=True)
-    body = models.TextField()
+    message = models.TextField()
 
     class Meta:
         ordering = ('timestamp',)
+
+
+
