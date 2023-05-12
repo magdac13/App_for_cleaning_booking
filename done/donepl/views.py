@@ -6,3 +6,8 @@ from django.views import View
 class MainView(View):
     def get(self, request):
         return render(request, 'main.html')
+
+
+class LoginView(View):
+    def get(self, request):
+        return render(request, 'login.html')
