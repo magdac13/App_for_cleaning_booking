@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.views import View
 
+from done import settings
+
 
 # Create your views here.
 class MainView(View):
@@ -8,6 +10,7 @@ class MainView(View):
         return render(request, 'main.html')
 
 
-class LoginView(View):
+class MapView(View):
     def get(self, request):
-        return render(request, 'login.html')
+        ctx = {'google_api_key': settings.GOOGLE_MAPS_API_KEY}
+        return render(request, 'live_location.html', ctx)

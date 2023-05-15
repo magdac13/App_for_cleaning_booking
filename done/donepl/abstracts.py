@@ -74,11 +74,11 @@ class GeoUserAbs(User):
 
         user_latitude = request.POST.get('latitude')
         user_longitude = request.POST.get('longitude')
-        # Przekaż klucz API dla Google Maps
+        # Przekaż klucz API dla googlemaps
 
         api_key = settings.GOOGLE_MAPS_API_KEY
 
-        # Zbuduj url zapytania do Google Maps
+        # Zbuduj url zapytania do googlemaps
         url = f'https://maps.googleapis.com/maps/api/js?key={api_key}'
 
         # Przekaż współrzędne użytkownika do szablonu HTML
@@ -91,7 +91,7 @@ class GeoUserAbs(User):
 class JobAbs(Job):
 
     # Obliczenie ceny na podstawie czasu oraz odległości za
-    # pomocą Google Maps Distance Matrix API
+    # pomocą googlemaps Distance Matrix API
 
     def price(self):
 
@@ -99,7 +99,7 @@ class JobAbs(Job):
         origin = settings.MY_APP_ADDRESS
         destination = user_address.address
 
-        # Tworzenie zapytania do API Google Maps
+        # Tworzenie zapytania do API googlemaps
         url = "https://maps.googleapis.com/maps/api/distancematrix/json?units=metric"
         url += "&origins=" + origin.replace(' ', '+')
         url += "&destinations=" + destination.replace(' ', '+')
