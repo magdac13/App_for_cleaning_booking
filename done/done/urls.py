@@ -17,12 +17,15 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
-from donepl.views import MainView, MapView
+from donepl.views import MainView, MapView, AboutView, RegisterView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('main/', MainView.as_view()),
-    path('register/', auth_views.LoginView.as_view(template_name="register.html"), name='login'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', auth_views.LoginView.as_view(template_name="login.html"), name='login'),
     path('map/', MapView.as_view(), name='map'),
+    path('about/', AboutView.as_view(), name='about'),
+
 
 ]

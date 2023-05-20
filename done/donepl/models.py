@@ -4,6 +4,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
 from geopy.distance import geodesic
+from django.contrib.gis.db import models
 
 
 # Create your models here.
@@ -60,22 +61,14 @@ class Service(models.Model):
 
 class Worker(models.Model):
 
-    GENDER_CHOICES = (
-        ('M', 'Male'),
-        ('F', 'Female'),
-    )
-
     date_of_birth = models.DateField()
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         User, on_delete=models.CASCADE
     )
 
-    gender = models.CharField(
-        max_length=100
-    )
     home_address = models.CharField(
-        max_length=2, choices=GENDER_CHOICES
+        max_length=250
     )
     phone_number = models.CharField(
         max_length=100
@@ -86,12 +79,8 @@ class Worker(models.Model):
             MinValueValidator(3.0), MaxValueValidator(5.0)
         ]
     )
-    worker_latitude = models.DecimalField(
-        max_digits=18, decimal_places=16, null=True, blank=True
-    )
-    worker_longitude = models.DecimalField(
-        max_digits=18, decimal_places=16, null=True, blank=True
-    )
+    worker_location = models.PointField()
+
     services = models.ManyToManyField(
         Service, blank=True
     )
@@ -104,36 +93,23 @@ class Worker(models.Model):
         return self.user.first_name + '' + self.user.last_name
 
     def get_location(self):
-        return self.worker_latitude, self.worker_longitude
+        return self.worker_location
 
-    def set_location(self, worker_latitude, worker_longitude):
-        self.worker_latitude = worker_latitude
-        self.worker_longitude = worker_longitude
+    def set_location(self, worker_location):
+        self.worker_location = worker_location
         self.save()
-
-    def get_distance_to_customer(self, customer):
-        worker_location = self.get_location()
-        customer_location = customer.get_location()
-        return geodesic(worker_location, customer_location).km
 
 
 class Customer(models.Model):
-    GENDER_CHOICES = (
-        ('M', 'Male'),
-        ('F', 'Female'),
-    )
 
     date_of_birth = models.DateField()
 
-    user = models.OneToOneField(
+    user = models.ForeignKey(
         User, on_delete=models.CASCADE
     )
 
-    gender = models.CharField(
-        max_length=100
-    )
     home_address = models.CharField(
-        max_length=2, choices=GENDER_CHOICES
+        max_length=250
     )
     phone_number = models.CharField(
         max_length=100
@@ -144,12 +120,8 @@ class Customer(models.Model):
             MinValueValidator(3.0), MaxValueValidator(5.0)
         ]
     )
-    worker_latitude = models.DecimalField(
-        max_digits=18, decimal_places=16, null=True, blank=True
-    )
-    worker_longitude = models.DecimalField(
-        max_digits=18, decimal_places=16, null=True, blank=True
-    )
+    customer_location = models.PointField()
+
     services = models.ManyToManyField(
         Service, blank=True
     )
@@ -162,17 +134,11 @@ class Customer(models.Model):
         return self.user.first_name + '' + self.user.last_name
 
     def get_location(self):
-        return self.worker_latitude, self.worker_longitude
+        return self.customer_location
 
-    def set_location(self, worker_latitude, worker_longitude):
-        self.worker_latitude = worker_latitude
-        self.worker_longitude = worker_longitude
+    def set_location(self, customer_location):
+        self.customer_location = customer_location
         self.save()
-
-    def get_distance_to_worker(self, worker):
-        worker_location = self.get_location()
-        customer_location = worker.get_location()
-        return geodesic(worker_location, customer_location).km
 
 
 class Order(models.Model):
