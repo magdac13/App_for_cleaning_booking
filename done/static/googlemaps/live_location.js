@@ -3,10 +3,12 @@
 // failed.", it means you probably did not give permission for the browser to
 // locate you.
 let map, infoWindow;
+let workerMarkers = [];
 
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 16,
+        zoom: 10,
+        center: { lat: 52.27965560005034, lng: 21.134200062347926 },
     });
     infoWindow = new google.maps.InfoWindow();
 
@@ -71,18 +73,18 @@ function sendLocationsToBackend(workerLocation, clientLocation) {
         fetchWorkerLocations(initialPos);
       },
       () => {
-        handleLocationError(true, infoWindow, map.getCenter());
+        // handleLocationError(true, infoWindow, map.getCenter());
       }
     );
   } else {
     // Browser doesn't support Geolocation
-    handleLocationError(false, infoWindow, map.getCenter());
+    // handleLocationError(false, infoWindow, map.getCenter());
   }
 }
 function fetchWorkerLocations(customerLocation) {
     // Perform an AJAX request to your Django backend to fetch worker locations
     // Replace the example URL "/get_worker_locations" with your actual endpoint
-    fetch("{% url 'map' %}")
+    fetch("/live_location/?latitude=en&lat=" + customerLocation.lat + "&lng=" + customerLocation.lng)
         .then((response) => response.json())
         .then((data) => {
             // Clear existing worker markers
@@ -91,16 +93,16 @@ function fetchWorkerLocations(customerLocation) {
             // Create marker for each worker location
             data.forEach((worker) => {
                 const workerLocation = {lat: worker.lat, lng: worker.lng};
-                const workerMarker = new google.maps.Marker({
+                const workerMarkers = new google.maps.Marker({
                     position: workerLocation,
                     map: map,
 
                 });
 
                 // Create marker for customer location
-                if (customerMarker) {
-                    customerMarker.setMap(null);
-                }
+                // if (customerMarker) {
+                //     customerMarker.setMap(null);
+                // }
                 const customerMarker = new google.maps.Marker({
                     position: customerLocation,
                     map: map,
