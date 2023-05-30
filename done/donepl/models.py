@@ -10,50 +10,32 @@ from django.contrib.gis.db import models
 # Create your models here.
 
 class Service(models.Model):
-    NAME_HOUSE_CLEANING = 'House cleaning'
-    NAME_HANDY_MAN = 'Handy Man'
-    NAME_CAR_CLEANING = 'Car cleaning'
-    NAME_KITCHEN_CLEANING = 'Kitchen cleaning'
-    NAME_BATH_CLEANING = 'Bath cleaning'
-    NAME_WINDOW_CLEANING = 'Window cleaning'
-    NAME_GARAGE_CLEANING = 'Garage cleaning'
-    NAME_COOKING = 'Cooking'
-    NAME_CLOTHES_WASHING = 'Clothes Washing'
-    NAME_DOG_WALKING = 'Dog walking'
-    NAME_PET_FEEDING = 'Pet feeding'
-    NAME_DISHWASHING = 'Dishwashing'
-    NAME_LAWN_MOWING = 'Lawn mowing'
-    NAME_PLANTS_WATERING = 'Plants watering'
 
-    JOBS_CHOICES = [
-        (NAME_HOUSE_CLEANING, 'You can choose which rooms you want to clean as well as scope of cleaning'),
-        (NAME_HANDY_MAN, 'Maintenance requests'),
-        (NAME_CAR_CLEANING, 'Car cleaning services, available at gas station points or by your house'),
-        (NAME_KITCHEN_CLEANING, 'Kitchen cleaning services'),
-        (NAME_BATH_CLEANING, 'Bath cleaning services'),
-        (NAME_WINDOW_CLEANING, 'Window cleaning services'),
-        (NAME_GARAGE_CLEANING, 'Garage cleaning services'),
-        (NAME_COOKING, 'Share your meals with neighbors'),
-        (NAME_CLOTHES_WASHING, 'Clothes washing services'),
-        (NAME_DOG_WALKING, 'Get your dog a walking buddy'),
-        (NAME_PET_FEEDING, 'Feed your pets while not at home'),
-        (NAME_DISHWASHING, 'Never get tired of dishwashing again'),
-        (NAME_LAWN_MOWING, 'Ask your neighbor to mow your lawn'),
-        (NAME_PLANTS_WATERING, "Don't let your plants dry out"),
-    ]
+    JOBS_CHOICES = (
+        ('House Cleaning', 'House Cleaning'),
+        ('Handy Man', 'Maintenance requests'),
+        ('Car Cleaning', 'Car cleaning services, available at gas station points or by your house'),
+        ('Kitchen cleaning', 'Kitchen cleaning services'),
+        ('Bath Cleaning', 'Bath cleaning services'),
+        ('Window Cleaning', 'Window cleaning services'),
+        ('Garage Cleaning', 'Garage cleaning services'),
+        ('Cooking', 'Cooking'),
+        ('Clothes Washing', 'Clothes Washing'),
+        ('Dog Walking', 'Dog Walking'),
+        ('Pet Feeding', 'Pet Feeding'),
+        ('Dishwashing', 'Dishwashing'),
+        ('Lawn Mowing', 'Lawn Mowing'),
+        ('Plants Watering', 'Plants Watering'),
+    )
+
     name = models.CharField(
-        max_length=100, choices=JOBS_CHOICES
+        max_length=200,
+        choices=JOBS_CHOICES,
+        default='House Cleaning'
     )
-    cost = models.DecimalField(
-        max_digits=8, decimal_places=2
-    )
-    order_time = models.DateTimeField(
-        auto_now_add=True
-    )
+
     date_created = models.DateTimeField(auto_now_add=True)
-    date_accepted = models.DateTimeField(null=True)
-    is_completed = models.BooleanField(default=False)
-    duration = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.name
@@ -61,23 +43,23 @@ class Service(models.Model):
 
 class Worker(models.Model):
 
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(null=True)
 
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE
+        User, on_delete=models.CASCADE, null=True
     )
 
     home_address = models.CharField(
-        max_length=250
+        max_length=250, null=True
     )
     phone_number = models.CharField(
-        max_length=100
+        max_length=100, null=True
     )
 
     rating = models.FloatField(
         default=5.0, validators=[
             MinValueValidator(3.0), MaxValueValidator(5.0)
-        ]
+        ], null=True
     )
     worker_location = models.PointField()
 
@@ -102,23 +84,23 @@ class Worker(models.Model):
 
 class Customer(models.Model):
 
-    date_of_birth = models.DateField()
+    date_of_birth = models.DateField(null=True)
 
     user = models.ForeignKey(
         User, on_delete=models.CASCADE
     )
 
     home_address = models.CharField(
-        max_length=250
+        max_length=250, null=True
     )
     phone_number = models.CharField(
-        max_length=100
+        max_length=100, null=True
     )
 
     rating = models.FloatField(
         default=5.0, validators=[
             MinValueValidator(3.0), MaxValueValidator(5.0)
-        ]
+        ], null=True
     )
     customer_location = models.PointField()
 

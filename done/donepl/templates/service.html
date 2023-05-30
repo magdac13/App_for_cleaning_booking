@@ -1,4 +1,5 @@
 {% load static %}
+<!DOCTYPE html>
 <html lang="en"><head>
     <meta charset="utf-8">
     <title>Bootstrap, from Twitter</title>
@@ -13,12 +14,82 @@
         padding-top: 60px;
         padding-bottom: 40px;
       }
+/* Styl dla kontenera formularza */
+.form-container {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Styl dla etykiety formularza */
+.form-label {
+  font-weight: bold;
+}
+
+/* Styl dla pól wyboru typu checkbox */
+.checkbox-label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-label span {
+  position: relative;
+  padding-left: 25px;
+  cursor: pointer;
+}
+
+.checkbox-label span:before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+}
+
+.checkbox-label span:after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #fff;
+  background-color: #4CAF50;
+  display: none;
+}
+
+.checkbox-label input[type="checkbox"]:checked + span:after {
+  display: block;
+}
+
+/* Styl dla przycisku submit */
+.submit-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.submit-button:hover {
+  background-color: #45a049;
+}
     </style>
     <link href="{% static 'bootstrap/css/bootstrap-responsive.css' %}" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
-      <script src="../assets/js/html5shiv.js"></script>
+      <script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
     <![endif]-->
 
     <!-- Fav and touch icons -->
@@ -46,86 +117,33 @@
               <li><a href="#contact">Contact</a></li>
               <li><a href="http:/map/">Map</a></li>
             </ul>
-             <form class="navbar-form pull-right">
+
+            <form class="navbar-form pull-right">
               <button type="submit" class="btn"><a href="http:/login/">Sign in</a></button>
               <button type="submit" class="btn"><a href="http:/register/">Register </a></button>
             </form>
+
           </div><!--/.nav-collapse -->
         </div>
       </div>
     </div>
-  <head>
 
-    <title>Geolocation</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
 
-    <link rel="stylesheet" type="text/css" href="{% static  'googlemaps/live_location.css' %}" />
-    <script type="module" src="{% static  'googlemaps/live_location.js' %}"></script>
-  </head>
-
-    <div style="
-    height: 600px;
-    width: 300px;
-    position: absolute;
-    top: 150px;
-    right: 150px;
-">
-    <table class="table table-hover">
-        <h6>Selected Services: {{ service }}</h6>
-  <thead>
-    <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Rating</th>
-    </tr>
-  </thead>
-
-  <tbody>
-
-    {% for worker in nearby_workers %}
-    <tr onclick="createOrder('{{ worker.id }}')">
-      <td>{{ worker.user.first_name }}</td>
-      <td>{{ worker.rating }}</td>
-      <td>{{ worker.photo }}</td>
-
-    </tr>
-  {% endfor %}
-  </tbody>
-     <form id="orderForm" method="POST" action="{% url 'create_order' %}" style="display: none;">
+<form method="POST" class="form-container" action="{% url 'map' %}">
   {% csrf_token %}
-  <input type="hidden" id="workerId" name="worker_id">
-  <input type="hidden" id="service" name="service" value="{{ service }}">
+
+  {% for field in form %}
+    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {% for choice in field.field.choices %}
+      <label class="checkbox-label">
+        <input type="checkbox" name="{{ field.html_name }}" value="{{ choice.0 }}" {% if choice.0 in field.value %}checked{% endif %}>
+        <span>{{ choice.1 }}</span>
+      </label>
+    {% endfor %}
+  {% endfor %}
+
+  <input type="submit" value="Submit" class="submit-button">
 </form>
-
-<script>
-  function createOrder(workerId) {
-    document.getElementById("workerId").value = workerId;
-    document.getElementById("orderForm").submit();
-  }
-</script>
-
-</table>
-
-        </div>
-  <body>
-    <div id="map"></div>
-
-
-  <script>
-
-    // const workers = {{ workers }};
-
-
-  </script>
-    <!--
-      The `defer` attribute causes the callback to execute after the full HTML
-      document has been parsed. For non-blocking uses, avoiding race conditions,
-      and consistent behavior across browsers, consider loading using Promises.
-      See https://developers.google.com/maps/documentation/javascript/load-maps-js-api
-      for more information.
-      -->
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}&callback=initMap&v=weekly"
-      defer
-    ></script>
   </body>
 </html>
+

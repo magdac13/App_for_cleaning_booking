@@ -48,19 +48,19 @@ for i in range(100):
     is_active = fake.pybool()
     date_joined = fake.date_time_this_year()
     rating = fake.pyfloat(min_value=3.0, max_value=5.0)
-    user = User.objects.create(
-        first_name=first_name,
-        last_name=last_name,
-        email=email,
-        password=password,
-        username=username,
-        is_superuser=is_superuser,
-        is_staff=is_staff,
-        is_active=is_active,
-        date_joined=timezone.now(),
-    )
+    # user = User.objects.create(
+    #     first_name=first_name,
+    #     last_name=last_name,
+    #     email=email,
+    #     password=password,
+    #     username=username,
+    #     is_superuser=is_superuser,
+    #     is_staff=is_staff,
+    #     is_active=is_active,
+    #     date_joined=timezone.now(),
+    # )
 
-    user_id = user.id
+    # user_id = user.id
     # Create a Point object using the generated coordinates
     worker_location = Point(fake.latlng())
     customer_location = Point(fake.latlng())
@@ -93,5 +93,7 @@ for i in range(100):
                          # is_staff, is_active, date_joined))
     # cur.execute(query2, (date_of_birth, home_address, phone_number,
                          # worker_location_sql, rating, user_id))
-    cur.execute(query3, (date_of_birth, home_address, phone_number,
-                         customer_location_sql, rating, user_id))
+    # cur.execute(query3, (date_of_birth, home_address, phone_number,
+                        # customer_location_sql, rating, user_id))
+
+    print(customer_location_sql)

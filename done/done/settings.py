@@ -145,6 +145,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MY_APP_ADDRESS = 'http://127.0.0.1:8000/'
 GOOGLE_MAPS_API_KEY = 'AIzaSyDNOmIANiGAchyRd4y9KPIU1VYRPuSF5po'
 
-
+LOGIN_REDIRECT_URL = 'service'
 
 

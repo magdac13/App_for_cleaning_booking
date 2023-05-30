@@ -4,7 +4,7 @@ from django.db import models
 from django.shortcuts import render
 import requests
 
-from done.donepl.models import Job
+from .models import Job
 
 
 _GEOLOCATION_BASE_URL = "https://www.googleapis.com"

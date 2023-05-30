@@ -27,9 +27,6 @@ function initMap() {
                         lng: position.coords.longitude,
                     };
 
-                    infoWindow.setPosition(pos);
-                    infoWindow.setContent("Location found.");
-                    infoWindow.open(map);
                     map.setCenter(pos);
 
                     // Get worker locations from your Django backend
@@ -83,44 +80,50 @@ function sendLocationsToBackend(workerLocation, clientLocation) {
 }
 function fetchWorkerLocations(customerLocation) {
     // Perform an AJAX request to your Django backend to fetch worker locations
-    // Replace the example URL "/get_worker_locations" with your actual endpoint
     fetch("/live_location/?latitude=en&lat=" + customerLocation.lat + "&lng=" + customerLocation.lng)
         .then((response) => response.json())
         .then((data) => {
-            // Clear existing worker markers
-            clearWorkerMarkers();
+
+
+            // Create marker for customer location
+            let customerMarker = new google.maps.Marker({
+            position: customerLocation,
+            map: map,
+            title: "Customer Location",
+            });
+
+            // Set new zoom level
+            map.setZoom(15);
+
+            // Set center of the map to customer location
+            map.setCenter(customerLocation);
 
             // Create marker for each worker location
+            console.log(data);
             data.forEach((worker) => {
-                const workerLocation = {lat: worker.lat, lng: worker.lng};
-                const workerMarkers = new google.maps.Marker({
-                    position: workerLocation,
-                    map: map,
+                let workerLocation = {lat: parseFloat(worker.latitude), lng: parseFloat(worker.longitude)};
+                let workerMarkers = new google.maps.Marker({
+                position: workerLocation,
+                map: map,
 
                 });
+                console.log(worker);
+                // Add worker marker to the array of worker markers
+                // workerMarkers.push(workerMarkers);
+            });
+        })
+        .catch((error) => {
+            console.error("Error fetching worker locations:", error);
 
-                // Create marker for customer location
-                // if (customerMarker) {
-                //     customerMarker.setMap(null);
-                // }
-                const customerMarker = new google.maps.Marker({
-                    position: customerLocation,
-                    map: map,
-                    title: "Customer Location",
-                });
-            })
-                .catch((error) => {
-                    console.error("Error fetching worker locations:", error);
-                });
         });
-};
-
-function clearWorkerMarkers() {
-  workerMarkers.forEach((marker) => {
-    marker.setMap(null);
-  });
-   workerMarkers = [];
 }
+
+// function clearWorkerMarkers() {
+//   workerMarkers.forEach((marker) => {
+//     marker.setMap(null);
+//   });
+//    workerMarkers = [];
+// }
 
 
 
