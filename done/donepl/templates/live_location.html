@@ -92,8 +92,8 @@
   </tbody>
      <form id="orderForm" method="POST" action="{% url 'create_order' %}" style="display: none;">
   {% csrf_token %}
-  <input type="hidden" id="workerId" name="worker_id">
-  <input type="hidden" id="service" name="service" value="{{ service }}">
+  <input type="hidden" id="workerId" name="worker">
+  <input type="hidden" id="service" name="service" value="{{ service.id }}">
 </form>
 
 <script>

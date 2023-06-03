@@ -17,10 +17,6 @@ class LoginForm(forms.ModelForm):
         }
 
 
-class RegisterForm(forms.ModelForm):
-    pass
-
-
 class ServiceForm(forms.Form):
     name = forms.MultipleChoiceField(
         choices=Service.JOBS_CHOICES,
@@ -42,9 +38,46 @@ class ServiceForm(forms.Form):
         fields = ('name',)
 
 
-class OrderForm(forms.Form):
-    worker_id = forms.IntegerField()
-    service = forms.CharField(max_length=200)
-    location = forms.CharField(max_length=255)
-    hours = forms.IntegerField()
+class OrderForm(forms.ModelForm):
+    # worker_id = forms.IntegerField()
+    # service = forms.CharField(max_length=200)
+    # location = forms.CharField(max_length=255)
+    # hours = forms.IntegerField()
 
+    class Meta:
+        model = Order
+        fields = ('worker', 'service')
+
+
+class RatingForm(forms.ModelForm):
+    model = Order
+    fields = ('worker_rating', 'customer_rating')
+
+
+class RegisterForm(forms.ModelForm):
+    CHOICES = {
+        ('customer', 'Customer'),
+        ('worker', 'Worker'),
+    }
+    first_name = forms.CharField(max_length=50)
+    last_name = forms.CharField(max_length=50)
+    email = forms.EmailField()
+    password = forms.CharField(widget=forms.PasswordInput)
+    username = forms.CharField(max_length=50)
+    user_type = forms.ChoiceField(choices=CHOICES)
+    phone_number = forms.CharField(max_length=20, validators=[URLValidator()])
+    profile_picture = forms.ImageField(required=False)
+
+
+class RegisterCustomerForm(forms.ModelForm):
+    date_of_birth = forms.DateField(required=False)
+    home_address = forms.CharField(max_length=255)
+    phone_number = forms.CharField(max_length=20, validators=[URLValidator()])
+    photo = forms.ImageField(required=False)
+
+
+class RegisterWorkerForm(forms.ModelForm):
+    date_of_birth = forms.DateField(required=False)
+    home_address = forms.CharField(max_length=255)
+    phone_number = forms.CharField(max_length=20, validators=[URLValidator()])
+    photo = forms.ImageField(required=False)

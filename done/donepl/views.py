@@ -1,13 +1,15 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, login
-from django.http import JsonResponse, HttpResponseNotAllowed
+from django.contrib.auth.models import User
+from django.http import JsonResponse, HttpResponseNotAllowed, request
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.views import View
 from django.views.decorators.http import require_POST
 from django.views.generic import FormView, CreateView
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
-from .forms import LoginForm, ServiceForm, OrderForm
+from .forms import LoginForm, ServiceForm, OrderForm, RegisterForm, RegisterCustomerForm, RegisterWorkerForm
 from .models import Worker, Customer, Service, Order
 from django.contrib.gis.geos import Point
 from django.contrib.gis.measure import Distance
@@ -56,7 +58,9 @@ class MapView(View):
     def post(self, request):
         form = ServiceForm(request.POST)
         if form.is_valid():
-            service = form.cleaned_data['name']
+
+            service_name = form.cleaned_data['name']
+            service = Service.objects.filter(name=service_name).first()
             nearby_workers = self.get_nearby_workers(request)
             context = {
                 'google_api_key': settings.GOOGLE_MAPS_API_KEY,
@@ -103,9 +107,50 @@ class AboutView(View):
         return render(request, 'about.html')
 
 
-class RegisterView(View):
+class RegisterView(FormView):
+    form_class = RegisterForm
+    template_name = 'register.html'
+
+    def define_user_type(self, form):
+
+        user_type = form.cleaned_data['user_type']
+
+        if user_type == 'customer':
+            return redirect('register_customer')
+        else:
+            return redirect('register_worker')
+
+    def form_valid(self, form):
+        form = RegisterForm(request.POST)
+        if User.objects.filter(username=form.cleaned_data['username']).exists():
+            form.add_error('username', "User already exists")
+            return super().form_invalid(form)
+
+        if form.cleaned_data['password'] != form.cleaned_data['repeat_password']:
+            form.add_error('repeat_password', "Passwords do not match")
+            return super().form_invalid(form)
+
+        User.objects.create_user(
+            username=form.cleaned_data['username'],
+            password=form.cleaned_data['password'],
+            first_name=form.cleaned_data['first_name'],
+            last_name=form.cleaned_data['last_name'],
+            email=form.cleaned_data['email']
+
+        )
+        return super().form_valid(form)
+
+
+class RegisterCustomerView(View):
     def get(self, request):
-        return render(request, 'register.html')
+        form = RegisterCustomerForm()
+        return render(request, 'customer_registration.html', context={'form': form})
+
+
+class RegisterWorkerView(View):
+    def get(self, request):
+        form = RegisterWorkerForm()
+        return render(request, 'worker_registration.html', context={'form': form})
 
 
 class CreateOrderView(View):
@@ -115,17 +160,24 @@ class CreateOrderView(View):
 
     def post(self, request):
         form = OrderForm(request.POST)
+        print(form.errors)
         if form.is_valid():
             order = Order(
-                worker_id=form.cleaned_data['worker_id'],
+                worker=form.cleaned_data['worker'],
                 service=form.cleaned_data['service'],
-                location=form.cleaned_data['location'],
-                hours=form.cleaned_data['hours'],
-                customer=request.user.customer
+                customer=request.user.customer,
+                date_time=timezone.now()
+
             )
+
             order.save()
-            return redirect('payment')  # Przekieruj na stronę płatności
+            return redirect('payment')
         return render(request, 'payment.html', {'form': form})
 
 
+class PaymentView(View):
+    def get(self, request):
+        return render(request, 'payment.html')
 
+    def post(self, request):
+        return render(request, 'payment.html')

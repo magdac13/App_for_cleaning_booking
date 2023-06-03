@@ -136,18 +136,17 @@ class Order(models.Model):
     date_time = models.DateTimeField(
         default=timezone.now
     )
-    location = models.CharField(
-        max_length=255
-    )
-    hours = models.IntegerField()
+
+    hours = models.IntegerField(blank=True)
+
     cost = models.DecimalField(
-        max_digits=10, decimal_places=2
+        max_digits=10, decimal_places=2, blank=True
     )
     worker_rating = models.DecimalField(
-        max_digits=3, decimal_places=2
+        max_digits=3, decimal_places=2, blank=True
     )
     customer_rating = models.DecimalField(
-        max_digits=3, decimal_places=2
+        max_digits=3, decimal_places=2, blank=True
     )
 
     def __str__(self):

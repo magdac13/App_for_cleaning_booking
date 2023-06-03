@@ -18,7 +18,8 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 
 
-from donepl.views import MainView, MapView, AboutView, RegisterView, ServiceView, CreateOrderView, LiveWorkerView
+from donepl.views import MainView, MapView, AboutView, RegisterView, ServiceView, CreateOrderView, LiveWorkerView, \
+    PaymentView, RegisterCustomerView, RegisterWorkerView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,7 +30,12 @@ urlpatterns = [
     path('about/', AboutView.as_view(), name='about'),
     path('live_location/', LiveWorkerView.as_view(), name='live_location'),
     path('service/', ServiceView.as_view(), name='service'),
-    path('create_order/', CreateOrderView.as_view(), name='create_order')
+    path('create_order/', CreateOrderView.as_view(), name='create_order'),
+    path('payment/', PaymentView.as_view(), name='payment'),
+    path('register_customer/', RegisterCustomerView.as_view(), name='register_customer'),
+    path('register_worker/', RegisterWorkerView.as_view(), name='register_worker'),
+
+
 
 
 
