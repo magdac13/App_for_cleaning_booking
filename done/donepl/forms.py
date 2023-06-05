@@ -50,26 +50,23 @@ class OrderForm(forms.ModelForm):
 
 
 class RatingForm(forms.ModelForm):
-    model = Order
-    fields = ('worker_rating', 'customer_rating')
+    class Meta:
+        model = Order
+        fields = ('worker_rating', 'customer_rating')
 
 
 class RegisterForm(forms.ModelForm):
-    CHOICES = {
-        ('customer', 'Customer'),
-        ('worker', 'Worker'),
-    }
-    first_name = forms.CharField(max_length=50)
-    last_name = forms.CharField(max_length=50)
-    email = forms.EmailField()
-    password = forms.CharField(widget=forms.PasswordInput)
-    username = forms.CharField(max_length=50)
-    user_type = forms.ChoiceField(choices=CHOICES)
-    phone_number = forms.CharField(max_length=20, validators=[URLValidator()])
-    profile_picture = forms.ImageField(required=False)
+    class Meta:
+        model = User
+        CHOICES = {
+            ('customer', 'Customer'),
+            ('worker', 'Worker'),
+        }
+        fields = ('first_name', 'last_name', 'email', 'password', 'username')
 
 
 class RegisterCustomerForm(forms.ModelForm):
+    model = Customer
     date_of_birth = forms.DateField(required=False)
     home_address = forms.CharField(max_length=255)
     phone_number = forms.CharField(max_length=20, validators=[URLValidator()])
@@ -77,6 +74,7 @@ class RegisterCustomerForm(forms.ModelForm):
 
 
 class RegisterWorkerForm(forms.ModelForm):
+    model = Worker
     date_of_birth = forms.DateField(required=False)
     home_address = forms.CharField(max_length=255)
     phone_number = forms.CharField(max_length=20, validators=[URLValidator()])

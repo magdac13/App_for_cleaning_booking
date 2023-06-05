@@ -19,11 +19,13 @@ from django.contrib.auth import views as auth_views
 
 
 from donepl.views import MainView, MapView, AboutView, RegisterView, ServiceView, CreateOrderView, LiveWorkerView, \
-    PaymentView, RegisterCustomerView, RegisterWorkerView
+    PaymentView, RegisterCustomerView, RegisterWorkerView, StartView, PricingView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('main/', MainView.as_view()),
+    path('', StartView.as_view()),
+    path('main/', MainView.as_view(), name='main'),
+    path('pricing/', PricingView.as_view(), name='pricing'),
     path('register/', RegisterView.as_view(), name='register'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'),
     path('map/', MapView.as_view(), name='map'),

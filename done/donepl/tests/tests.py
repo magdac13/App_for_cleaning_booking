@@ -7,8 +7,8 @@ from django.urls import reverse
 from django.urls import reverse
 from django.contrib.gis.geos import Point
 from donepl.views import MapView, ServiceView, CreateOrderView, LiveWorkerView
-from ..forms import ServiceForm, OrderForm
-from ..models import Order, Worker, Service
+from donepl.forms import ServiceForm, OrderForm
+from donepl.models import Order, Worker, Service
 
 
 class MapViewTest(TestCase):
